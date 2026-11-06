@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "store": {
+    "name": "R36 STORE",
+    "description": "Loja independente de jogos e aplicativos para R36S",
+    "platform": "R36S",
+    "firmware": ["ArkOS", "dArkOS"]
+  },
+  "updated_at": "2026-11-06",
+  "items": []
+}
