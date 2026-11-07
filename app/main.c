@@ -998,3 +998,191 @@ int main(void) {
                             }
                         }
                         break;
+
+                    case SDLK_RIGHT:
+                        if(!exit_confirm && !in_catalog && !details &&
+                           !installing && !install_finished) {
+                            in_catalog=true;
+                            selected=0;
+                            if(category==4)
+                                refresh_installed_library();
+                        }
+                        break;
+
+                    case SDLK_LEFT:
+                        if(!exit_confirm && in_catalog && !details &&
+                           !installing && !install_finished)
+                            in_catalog=false;
+                        break;
+
+                    /* A fisico: Enter ou Z */
+                    case SDLK_RETURN:
+                    case SDLK_z:
+                        if(exit_confirm) {
+                            running=false;
+                        } else if(!installing && !install_finished) {
+                            if(!in_catalog && !details) {
+                                in_catalog=true;
+                                selected=0;
+                            } else if(in_catalog && !details && category!=0) {
+                                details=true;
+                            } else if(details && category==1) {
+                                request_game_launch();
+                            } else if(details && category==4) {
+                                request_library_launch();
+                            }
+                        }
+                        break;
+
+                    /* B fisico: X ou Backspace */
+                    case SDLK_y:
+                        if(details && category==4 && !installing &&
+                           !install_finished)
+                            request_library_uninstall();
+                        break;
+
+                    case SDLK_x:
+                    case SDLK_BACKSPACE:
+                        if(installing) {
+                            request_install_cancel();
+                        } else if(install_finished) {
+                            install_finished=false;
+                            install_success=false;
+                            details=true;
+                        } else if(exit_confirm) {
+                            exit_confirm=false;
+                        } else if(details) {
+                            details=false;
+                            launch_error[0]='\0';
+                        } else if(in_catalog) {
+                            in_catalog=false;
+                        } else {
+                            exit_confirm=true;
+                        }
+                        break;
+                }
+            }
+
+            if(e.type==SDL_CONTROLLERBUTTONDOWN) {
+                switch(e.cbutton.button) {
+                    case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                        if(!exit_confirm && !details && !installing &&
+                           !install_finished) {
+                            if(in_catalog) {
+                                if(category!=0)
+                                    move_selection(-1);
+                            } else {
+                                change_category(-1);
+                            }
+                        }
+                        break;
+
+                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                        if(!exit_confirm && !details && !installing &&
+                           !install_finished) {
+                            if(in_catalog) {
+                                if(category!=0)
+                                    move_selection(1);
+                            } else {
+                                change_category(1);
+                            }
+                        }
+                        break;
+
+                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                        if(!exit_confirm && !in_catalog && !details &&
+                           !installing && !install_finished) {
+                            in_catalog=true;
+                            selected=0;
+                            if(category==4)
+                                refresh_installed_library();
+                        }
+                        break;
+
+                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                        if(!exit_confirm && in_catalog && !details &&
+                           !installing && !install_finished)
+                            in_catalog=false;
+                        break;
+
+                    /* Botao A fisico gera SDL B. */
+                    case SDL_CONTROLLER_BUTTON_B:
+                        if(exit_confirm) {
+                            running=false;
+                        } else if(!installing && !install_finished) {
+                            if(!in_catalog && !details) {
+                                in_catalog=true;
+                                selected=0;
+                            } else if(in_catalog && !details && category!=0) {
+                                details=true;
+                            } else if(details && category==1) {
+                                request_game_launch();
+                            } else if(details && category==4) {
+                                request_library_launch();
+                            }
+                        }
+                        break;
+
+                    case SDL_CONTROLLER_BUTTON_Y:
+                        if(details && category==4 && !installing &&
+                           !install_finished)
+                            request_library_uninstall();
+                        break;
+
+                    /* Botao B fisico gera SDL A. */
+                    case SDL_CONTROLLER_BUTTON_A:
+                        if(installing) {
+                            request_install_cancel();
+                        } else if(install_finished) {
+                            install_finished=false;
+                            install_success=false;
+                            details=true;
+                        } else if(exit_confirm) {
+                            exit_confirm=false;
+                        } else if(details) {
+                            details=false;
+                            launch_error[0]='\0';
+                        } else if(in_catalog) {
+                            in_catalog=false;
+                        } else {
+                            exit_confirm=true;
+                        }
+                        break;
+
+                    case SDL_CONTROLLER_BUTTON_BACK:
+                    case SDL_CONTROLLER_BUTTON_START:
+                        if(!installing && !install_finished)
+                            exit_confirm=true;
+                        break;
+                }
+            }
+        }
+
+        process_installer();
+        draw();
+        SDL_Delay(16);
+    }
+
+    if(pad) SDL_GameControllerClose(pad);
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
+    TTF_CloseFont(font);
+    TTF_CloseFont(bold);
+    TTF_Quit();
+    SDL_Quit();
+
+    if(launch_requested) {
+        fprintf(stderr,"R36 STORE: iniciando jogo %s\n",launch_id);
+        execlp("python3","python3",
+               "/roms/r36store/app/executor.py",
+               launch_id,(char *)NULL);
+
+        fprintf(stderr,"ERRO ao iniciar executor: %s\n",
+                strerror(errno));
+        return 1;
+    }
+
+    return 0;
+}
