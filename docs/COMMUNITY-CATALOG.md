@@ -9,33 +9,46 @@ Snapshot: 2026-11-07.
 - 1,206 entries advertise R36S availability and an ARM64/ARMHF build.
 - 574 are marked upstream as ready-to-run.
 - The remaining entries may require original game files, demos, runtimes, or other setup.
-- Every imported entry is labelled as untested by R36 STORE.
+- "Ready to run" is upstream metadata, not a compatibility test by R36 STORE.
 
-## Community adapter status
+## Community adapter profiles
 
-The first adapter is now integrated into the store's install flow. It currently
-supports a deliberately narrow profile: ready-to-run PortMaster packages whose
-official launcher identifies a RetroArch/libretro core and whose archive
-contains an ARM64 core.
+The store now has two independent package adapters:
 
-For this profile, R36 STORE:
+1. **RetroArch/libretro:** recognizes a package containing one ARM64 libretro core and an upstream launcher that invokes RetroArch.
+2. **Native SDL + keymap:** recognizes a single ARM64 ELF executable, checks its dynamic libraries with `readelf`, and reads one upstream `.gptk` controller profile. R36 STORE generates its own launcher and uses its own Python/evdev-to-uinput key mapper. The mapper uses the legacy uinput ABI because this dArkOS device runs Linux 4.4.
 
-1. Downloads the official package URL from the community index.
-2. Checks the published archive size and MD5 before extraction.
-3. Rejects unsafe ZIP paths, symbolic links, duplicate entries, and oversized archives.
-4. Extracts into the private R36 STORE game directory.
-5. Generates its own launcher for the ARM64 libretro core.
-6. Registers the game in the R36 STORE library.
+The installer downloads only HTTPS packages from GitHub, checks the published archive size and MD5, rejects unsafe ZIP paths, symbolic links, duplicate entries, and oversized archives, then extracts into the private R36 STORE game directory.
 
-The adapter does **not** execute upstream PortMaster shell launchers, source
-PortMaster control files, or modify the PortMaster installation. A package
-that needs PortMaster runtime functions, external game files, additional
-libraries, or a launcher format outside the supported profile is rejected
-without installation.
+The adapter does **not** execute upstream PortMaster shell launchers, source PortMaster control files, call PortMaster runtime helpers, or modify the PortMaster installation. It rejects packages that do not match a supported profile or that have unresolved shared-library dependencies.
 
-## Important installation status
+## Adapter-ready candidates
 
-The 1,206 entries are a discovery catalog, not 1,206 confirmed installable
-games. "Ready to run" is upstream metadata, not an R36 STORE compatibility
-test. Each supported package still needs a physical test on the R36S before
-it can be labelled verified.
+Static package checks currently identify 22 candidates for installation through R36 STORE:
+
+- 2048
+- Wordle SDL
+- SDL Sopwith
+- Celeste Classic
+- Falling Time
+- Raptor
+- Nonny
+- OpenSyobon
+- Shippy
+- Der Clou!
+- Meritous
+- Worship Vector
+- Escape
+- Powder
+- Znax
+- ColorLines
+- Mutant Tank Knights
+- Nebulus
+- OpenFodder
+- GNU Robbo
+- LBreakoutHD
+- mReader
+
+These are **adapter-ready, not gameplay-verified**. Package download, MD5, safe extraction, architecture, dependency checks, and launcher generation were tested in temporary directories. No game was launched remotely. Each candidate still needs a physical control/gameplay test on the R36S before it can be labelled verified.
+
+The community list remains a discovery catalog; it does not mean all 1,206 entries are installable.
