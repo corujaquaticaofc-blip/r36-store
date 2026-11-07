@@ -215,7 +215,8 @@ void sync_catalog_installed(void) {
         bool store_remote =
             strcmp(games[i].port,"ONLINE")==0 ||
             strncmp(games[i].port,"/roms/.r36store/ports/",22)==0;
-        if(!store_remote) continue;
+        bool community = strcmp(games[i].port,"COMMUNITY")==0;
+        if(!store_remote && !community) continue;
         bool found=false;
         for(int j=0;j<library_count;j++) {
             if(strcmp(games[i].id,library_games[j].id)==0) {
@@ -227,7 +228,7 @@ void sync_catalog_installed(void) {
                 break;
             }
         }
-        if(!found) {
+        if(!found && store_remote) {
             snprintf(games[i].status,sizeof(games[i].status),"DISPONIVEL");
             snprintf(games[i].port,sizeof(games[i].port),"ONLINE");
         }
@@ -314,9 +315,15 @@ void draw_game_details(void) {
     }
 
     if(strcmp(g->port,"COMMUNITY")==0) {
-        text("COMPATIBILIDADE NAO TESTADA",225,360,font,
-             (SDL_Color){255,210,90,255});
-        text("INSTALADOR EM ADAPTACAO",225,385,bold,blue);
+        if(strcmp(g->status,"VERIFICAR")==0) {
+            text("COMPATIBILIDADE EM ADAPTACAO",225,360,font,
+                 (SDL_Color){255,210,90,255});
+            text("A PARA INSTALAR",225,385,bold,blue);
+        } else {
+            text("REQUER ARQUIVOS / CONFIGURACAO",225,360,font,
+                 (SDL_Color){255,174,75,255});
+            text("AINDA NAO INSTALAVEL",225,385,bold,blue);
+        }
         text("B PARA VOLTAR",425,385,bold,blue);
     } else if(selected_is_remote()) {
         text("A PARA INSTALAR",225,385,bold,blue);
@@ -505,7 +512,8 @@ void draw(void) {
     } else if(details && category==1) {
         text(selected>=0 && selected<game_count &&
              strcmp(games[selected].port,"COMMUNITY")==0 ?
-             "PORT COMUNITARIO" :
+             (strcmp(games[selected].status,"VERIFICAR")==0 ?
+              "A  INSTALAR" : "ARQUIVOS NECESSARIOS") :
              (selected_is_remote() ? "A  INSTALAR" : "A  INICIAR"),
              18,455,font,white);
         text("B  VOLTAR",190,455,font,white);
@@ -626,8 +634,12 @@ void request_game_launch(void) {
 
     Game *g=&games[selected];
     if(strcmp(g->port,"COMMUNITY")==0) {
-        snprintf(launch_error,sizeof(launch_error),
-                 "Port comunitario: instalador em adaptacao.");
+        if(strcmp(g->status,"VERIFICAR")==0) {
+            start_install();
+        } else {
+            snprintf(launch_error,sizeof(launch_error),
+                     "Este port requer arquivos ou configuracao.");
+        }
         return;
     }
     if(selected_is_remote()) {
@@ -686,7 +698,11 @@ void request_library_uninstall(void) {
 }
 
 void start_install(void) {
-    if(installing || install_finished || !selected_is_remote())
+    bool community =
+        category==1 && selected>=0 && selected<game_count &&
+        strcmp(games[selected].port,"COMMUNITY")==0;
+    if(installing || install_finished ||
+       (!community && !selected_is_remote()))
         return;
 
     Game *g=&games[selected];
@@ -727,9 +743,15 @@ void start_install(void) {
         close(descriptors[0]);
         close(descriptors[1]);
 
-        execlp("python3","python3",
-               "/roms/r36store/app/installer.py",
-               "install",g->id,(char *)NULL);
+        if(community) {
+            execlp("python3","python3",
+                   "/roms/r36store/app/community_adapter.py",
+                   "install",g->id,(char *)NULL);
+        } else {
+            execlp("python3","python3",
+                   "/roms/r36store/app/installer.py",
+                   "install",g->id,(char *)NULL);
+        }
 
         _exit(127);
     }
@@ -982,6 +1004,9 @@ int main(void) {
     }
 
     SDL_Event e;
+    Uint32 dpad_repeat_at=0;
+    const Uint32 dpad_initial_delay=350;
+    const Uint32 dpad_repeat_interval=105;
 
     while(running) {
         while(SDL_PollEvent(&e)) {
@@ -1108,6 +1133,7 @@ int main(void) {
                             } else {
                                 change_category(1);
                             }
+                            dpad_repeat_at=SDL_GetTicks()+dpad_initial_delay;
                         }
                         break;
 
@@ -1182,6 +1208,26 @@ int main(void) {
             }
         }
 
+        /* Repeticao continua do direcional enquanto o botao permanece pressionado. */
+        if(pad && SDL_GameControllerGetButton(
+               pad,SDL_CONTROLLER_BUTTON_DPAD_DOWN)) {
+            Uint32 now=SDL_GetTicks();
+            if(dpad_repeat_at && (Sint32)(now-dpad_repeat_at)>=0) {
+                if(!exit_confirm && !details && !installing &&
+                   !install_finished) {
+                    if(in_catalog) {
+                        if(category!=0)
+                            move_selection(1);
+                    } else {
+                        change_category(1);
+                    }
+                }
+                dpad_repeat_at=now+dpad_repeat_interval;
+            }
+        } else {
+            dpad_repeat_at=0;
+        }
+
         process_installer();
         draw();
         SDL_Delay(16);
@@ -1210,3 +1256,5 @@ int main(void) {
 
     return 0;
 }
+
+[executed on device: gilbert (f7f1466f-4c0b-4a9b-8c86-4d8bdba1ba83)]
