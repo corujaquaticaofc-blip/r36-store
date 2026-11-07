@@ -16,14 +16,14 @@
       "name": "2048",
       "category": "Puzzle",
       "description": "Junte os números no tabuleiro até alcançar 2048; agora com números visíveis.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "architecture": "aarch64",
       "firmware": [
         "ArkOS",
         "dArkOS"
       ],
       "download": {
-        "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/2048-r36s-v1.0.0.zip",
+        "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/2048-r36s-v1.0.1.zip",
         "size_bytes": 6662,
         "sha256": "5650efd44d8167dbce705f2c86aef953a1a8a04fae9c8c639e265c3cab1c2ada"
       },
