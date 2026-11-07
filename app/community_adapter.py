@@ -120,6 +120,8 @@ def safe_extract(package, destination):
                 total += m.file_size
                 if total > MAX_EXTRACT:
                     raise ValueError("Pacote excede limite de extracao.")
+        if shutil.disk_usage(destination).free < total + 32 * 1024 * 1024:
+            raise ValueError("Espaco livre insuficiente para extrair o pacote.")
         for key, is_dir in seen.items():
             parts = key.split("/")
             for i in range(1, len(parts)):
@@ -160,7 +162,7 @@ def safe_extract(package, destination):
 def adapt_libretro(root):
     scripts = list(root.glob("*.sh"))
     cores = sorted(root.rglob("*.so.aarch64"))
-    if not cores:
+    if len(cores) != 1:
         return None
     # Exige evidencia de que o launcher oficial usa RetroArch/libretro.
     if not any("retroarch" in p.read_text(encoding="utf-8", errors="ignore").lower()
