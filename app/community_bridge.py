@@ -8,6 +8,15 @@ URL = "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/ca
 DEST = Path("/roms/r36store/cache/community-games.db")
 MAX_BYTES = 8 * 1024 * 1024
 
+SUPPORTED = {
+    "pm-2048", "pm-wordlesdl", "pm-sdlsopwith", "pm-cceleste",
+    "pm-falling_time", "pm-raptor", "pm-nonny", "pm-opensyobon",
+    "pm-shippy", "pm-derclou", "pm-meritous", "pm-worship_vector",
+    "pm-escape", "pm-powder", "pm-znax", "pm-colorlines",
+    "pm-mutant_tank_knights", "pm-nebulus", "pm-openfodder",
+    "pm-gnurobbo", "pm-lbreakouthd", "pm-mreader"
+}
+
 def clean(value, limit, fallback=""):
     value = str(value if value is not None else fallback).replace("|", "/").replace("\r", " ").replace("\n", " ").strip()
     value = re.sub(r"\s+", " ", value)
@@ -32,7 +41,7 @@ def main():
         seen.add(game_id)
         name = clean(item.get("name"), 95, game_id)
         category = clean(item.get("category"), 31, "other")
-        status = "VERIFICAR" if item.get("ready_to_run") else "REQUER ARQUIVOS"
+        status = "ADAPTADO" if game_id in SUPPORTED else ("VERIFICAR" if item.get("ready_to_run") else "REQUER ARQUIVOS")
         lines.append(f"{game_id}|{name}|{category}|{status}|COMMUNITY|PortMaster")
 
     DEST.parent.mkdir(parents=True, exist_ok=True)
@@ -49,3 +58,5 @@ if __name__ == "__main__":
     except Exception as error:
         print("ERRO NO CATALOGO COMUNITARIO:", error)
         raise SystemExit(1)
+
+[executed on device: gilbert (f7f1466f-4c0b-4a9b-8c86-4d8bdba1ba83)]
