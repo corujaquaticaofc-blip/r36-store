@@ -1,0 +1,111 @@
+name: Publish Snake package
+
+on:
+  push:
+    paths:
+      - ".github/workflows/publish-snake.yml"
+      - "games/snake/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SDL2 build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libsdl2-dev zip
+
+      - name: Build and package for R36S
+        run: |
+          set -euo pipefail
+          mkdir -p package/bin package/userdata
+          gcc games/snake/main.c -o package/bin/snake -O2 -Wall -Wextra $(sdl2-config --cflags --libs)
+          chmod 755 package/bin/snake
+          cat > package/launch.sh <<'EOF'
+          #!/bin/bash
+          set -u
+          GAME_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
+          USERDATA="$GAME_DIR/userdata"
+          mkdir -p "$USERDATA"
+          export HOME="$USERDATA"
+          export XDG_DATA_HOME="$USERDATA/.local/share"
+          export SDL_VIDEODRIVER=kmsdrm
+          export SDL_AUDIODRIVER=alsa
+          export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
+          if [ -e /dev/tty1 ]; then
+            exec < /dev/tty1
+            printf "\033c" > /dev/tty1 2>/dev/null || true
+          fi
+          cd "$GAME_DIR"
+          "$GAME_DIR/bin/snake" > "$USERDATA/game.log" 2>&1
+          EOF
+          chmod 755 package/launch.sh
+          cat > package/r36store.json <<'EOF'
+          {
+            "schema_version": 1,
+            "launcher": {
+              "type": "script",
+              "target": "launch.sh",
+              "cwd": ".",
+              "args": [],
+              "env": {},
+              "interpreter": "/bin/bash"
+            }
+          }
+          EOF
+          cp games/snake/main.c package/main.c
+          (cd package && zip -X -r ../snake-r36s-v1.0.0.zip .)
+          SIZE=$(stat -c%s snake-r36s-v1.0.0.zip)
+          SHA=$(sha256sum snake-r36s-v1.0.0.zip | cut -d' ' -f1)
+          python3 - "$SIZE" "$SHA" <<'PY'
+          import json, sys
+          from pathlib import Path
+          p = Path("catalog/catalog.json")
+          data = json.loads(p.read_text())
+          items = data.setdefault("items", [])
+          items = [x for x in items if x.get("id") != "snake"]
+          items.append({
+            "id": "snake",
+            "name": "Snake",
+            "category": "Arcade",
+            "description": "Jogo clássico da cobrinha, com controles direcionais.",
+            "version": "1.0.0",
+            "architecture": "aarch64",
+            "firmware": ["ArkOS", "dArkOS"],
+            "download": {
+              "url": "https://github.com/corujaquaticaofc-blip/r36-store/releases/download/snake-v1.0.0/snake-r36s-v1.0.0.zip",
+              "size_bytes": int(sys.argv[1]),
+              "sha256": sys.argv[2]
+            },
+            "install": {"type": "zip", "target": "private_ports"},
+            "cover": "",
+            "legal": {"notice": "Código original; não inclui ROMs nem conteúdo protegido."}
+          })
+          data["items"] = items
+          data["updated_at"] = "2026-11-07"
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
+          PY
+
+      - name: Commit catalog metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalog/catalog.json
+          git commit -m "Publish Snake package metadata" || echo "Catalog unchanged"
+          git push
+
+      - name: Publish release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: snake-v1.0.0
+          name: Snake for R36S v1.0.0
+          body: Original SDL2 Snake package for R36S (aarch64). No copyrighted ROMs or assets.
+          files: snake-r36s-v1.0.0.zip
+          fail_on_unmatched_files: true
