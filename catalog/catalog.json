@@ -4,8 +4,37 @@
     "name": "R36 STORE",
     "description": "Loja independente de jogos e aplicativos para R36S",
     "platform": "R36S",
-    "firmware": ["ArkOS", "dArkOS"]
+    "firmware": [
+      "ArkOS",
+      "dArkOS"
+    ]
   },
-  "updated_at": "2026-11-06",
-  "items": []
+  "updated_at": "2026-11-07",
+  "items": [
+    {
+      "id": "snake",
+      "name": "Snake",
+      "category": "Arcade",
+      "description": "Jogo clássico da cobrinha, com controles direcionais.",
+      "version": "1.0.0",
+      "architecture": "aarch64",
+      "firmware": [
+        "ArkOS",
+        "dArkOS"
+      ],
+      "download": {
+        "url": "https://github.com/corujaquaticaofc-blip/r36-store/releases/download/snake-v1.0.0/snake-r36s-v1.0.0.zip",
+        "size_bytes": 6993,
+        "sha256": "8edfc928e45fe96ced0d7a43918f3b3f7232afae16219199e8cc243b7e3bae08"
+      },
+      "install": {
+        "type": "zip",
+        "target": "private_ports"
+      },
+      "cover": "",
+      "legal": {
+        "notice": "Código original; não inclui ROMs nem conteúdo protegido."
+      }
+    }
+  ]
 }
