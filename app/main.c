@@ -59,6 +59,7 @@ static const char *items[][4] = {
 static int category = 0;
 static int selected = 0;
 static int catalog_scroll = 0;
+static int library_scroll = 0;
 static bool details = false;
 static bool in_catalog = false;
 static bool exit_confirm = false;
@@ -332,28 +333,34 @@ void draw_game_details(void) {
 
 void draw_library(void) {
     text("MINHA BIBLIOTECA",202,91,bold,white);
-
     if(library_count==0) {
         text("Nenhum item instalado pela loja.",220,160,font,muted);
-        text("Os pacotes instalados aparecerao aqui.",220,190,font,muted);
+        text("Os itens aparecem aqui apos instalar.",220,190,font,muted);
         return;
     }
-
-    for(int i=0;i<library_count;i++) {
-        int y=130+i*48;
-
-        rect(202,y,415,42,panel);
-
+    const int visible=6;
+    int max_scroll=library_count-visible;
+    if(max_scroll<0) max_scroll=0;
+    if(library_scroll>max_scroll) library_scroll=max_scroll;
+    if(library_scroll<0) library_scroll=0;
+    rect(202,120,415,300,panel);
+    for(int row=0;row<visible;row++) {
+        int i=library_scroll+row;
+        if(i>=library_count) break;
+        int y=130+row*48;
+        rect(202,y,415,42,(SDL_Color){24,39,64,255});
         if(selected==i) {
             SDL_SetRenderDrawColor(renderer,55,145,255,255);
             SDL_Rect outline={202,y,415,42};
             SDL_RenderDrawRect(renderer,&outline);
         }
-
         text(library_games[i].name,215,y+12,bold,white);
         text(library_games[i].status,435,y+14,font,
              (SDL_Color){90,210,145,255});
     }
+    char counter[48];
+    snprintf(counter,sizeof(counter),"%d / %d",selected+1,library_count);
+    text(counter,560,421,font,muted);
 }
 
 void draw_library_details(void) {
@@ -533,6 +540,7 @@ void change_category(int direction) {
     category=(category+direction+5)%5;
     selected=0;
     catalog_scroll=0;
+    library_scroll=0;
     details=false;
     if(category==4)
         refresh_installed_library();
@@ -558,6 +566,15 @@ void move_selection(int direction) {
         int max_scroll=game_count-visible;
         if(max_scroll<0) max_scroll=0;
         if(catalog_scroll>max_scroll) catalog_scroll=max_scroll;
+    } else if(category==4) {
+        const int visible=6;
+        if(selected<library_scroll)
+            library_scroll=selected;
+        else if(selected>=library_scroll+visible)
+            library_scroll=selected-visible+1;
+        int max_scroll=library_count-visible;
+        if(max_scroll<0) max_scroll=0;
+        if(library_scroll>max_scroll) library_scroll=max_scroll;
     }
 }
 
