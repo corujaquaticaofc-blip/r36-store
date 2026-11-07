@@ -14,7 +14,12 @@ SUPPORTED = {
     "pm-shippy", "pm-derclou", "pm-meritous", "pm-worship_vector",
     "pm-escape", "pm-powder", "pm-znax", "pm-colorlines",
     "pm-mutant_tank_knights", "pm-nebulus", "pm-openfodder",
-    "pm-gnurobbo", "pm-lbreakouthd", "pm-mreader"
+    "pm-gnurobbo", "pm-lbreakouthd", "pm-mreader",
+    "pm-waternet", "pm-hoverboard", "pm-iichantra_pear",
+    "pm-ultimatetapankaikki", "pm-cavepacker",
+    "pm-abuse", "pm-nkaruga", "pm-profadeluxe", "pm-vitasnake",
+    "pm-pekka-kana-2", "pm-blockout2", "pm-demodome", "pm-hex-a-hop",
+    "pm-cave-story-evo"
 }
 
 def clean(value, limit, fallback=""):
