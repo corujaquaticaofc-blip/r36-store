@@ -14,10 +14,15 @@ static void draw_number(SDL_Renderer*r,int value,int cx,int cy,int scale){
  for(int n=0;n<len;n++){int d=str[n]-'0';for(int y=0;y<5;y++)for(int x=0;x<3;x++)if(digit[d][y]&(1<<(2-x))){SDL_Rect p={x0+(n*4+x)*scale,cy-2*scale+y*scale,scale,scale};SDL_RenderFillRect(r,&p);}}
 }
 int main(void){
- if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER|SDL_INIT_JOYSTICK)<0)return 1;SDL_Window*w=SDL_CreateWindow("R36 STORE - 2048",0,0,W,H,SDL_WINDOW_FULLSCREEN);if(!w){SDL_Quit();return 1;}SDL_Renderer*r=SDL_CreateRenderer(w,-1,SDL_RENDERER_ACCELERATED);
+ if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER|SDL_INIT_JOYSTICK)<0)return 1;
+ SDL_Window*w=SDL_CreateWindow("R36 STORE - 2048",0,0,W,H,SDL_WINDOW_FULLSCREEN);
+ if(!w){SDL_Quit();return 1;}
+ SDL_Renderer*r=SDL_CreateRenderer(w,-1,SDL_RENDERER_ACCELERATED);
  R36Pad pad; r36_pad_open(&pad);
- while(!quit){SDL_Event e;while(SDL_PollEvent(&e)){if(e.type==SDL_QUIT)quit=1;if(e.type==SDL_JOYBUTTONDOWN&&e.jbutton.button==1)quit=1;if(e.type==SDL_KEYDOWN&&e.key.keysym.sym==SDLK_ESCAPE)quit=1;}
- Uint32 now=SDL_GetTicks();if(now-last>140){last=now;int dir=-1;const Uint8*k=SDL_GetKeyboardState(NULL);if(r36_dir(&pad,0)||k[SDL_SCANCODE_LEFT])dir=0;else if(r36_dir(&pad,1)||k[SDL_SCANCODE_RIGHT])dir=1;else if(r36_dir(&pad,2)||k[SDL_SCANCODE_UP])dir=2;else if(r36_dir(&pad,3)||k[SDL_SCANCODE_DOWN])dir=3;if(r36_button(&pad,0)){for(int y=0;y<4;y++)for(int x=0;x<4;x++)board[y][x]=0;spawn();spawn();}if(dir>=0){slide(dir);spawn();}}
+ srand((unsigned)time(NULL)); spawn(); spawn();
+ int quit=0; Uint32 last=0;
+ while(!quit){SDL_Event e;while(SDL_PollEvent(&e)){if(e.type==SDL_QUIT)quit=1;if(e.type==SDL_JOYBUTTONDOWN&&e.jbutton.button==1)quit=1;if(e.type==SDL_JOYBUTTONDOWN&&e.jbutton.button==0){for(int y=0;y<4;y++)for(int x=0;x<4;x++)board[y][x]=0;spawn();spawn();}if(e.type==SDL_CONTROLLERBUTTONDOWN&&e.cbutton.button==SDL_CONTROLLER_BUTTON_B)quit=1;if(e.type==SDL_CONTROLLERBUTTONDOWN&&e.cbutton.button==SDL_CONTROLLER_BUTTON_A){for(int y=0;y<4;y++)for(int x=0;x<4;x++)board[y][x]=0;spawn();spawn();}if(e.type==SDL_KEYDOWN&&e.key.keysym.sym==SDLK_ESCAPE)quit=1;}
+ Uint32 now=SDL_GetTicks();if(now-last>140){last=now;int dir=-1;const Uint8*k=SDL_GetKeyboardState(NULL);if(r36_dir(&pad,0)||k[SDL_SCANCODE_LEFT])dir=0;else if(r36_dir(&pad,1)||k[SDL_SCANCODE_RIGHT])dir=1;else if(r36_dir(&pad,2)||k[SDL_SCANCODE_UP])dir=2;else if(r36_dir(&pad,3)||k[SDL_SCANCODE_DOWN])dir=3;if(dir>=0){slide(dir);spawn();}}
  SDL_SetRenderDrawColor(r,22,25,32,255);SDL_RenderClear(r);for(int y=0;y<4;y++)for(int x=0;x<4;x++){SDL_Rect c={100+x*110,20+y*110,100,100};int v=board[y][x],shade=v?40+(v%180):55;if(shade>220)shade=220;SDL_SetRenderDrawColor(r,shade,shade/2+35,80,255);SDL_RenderFillRect(r,&c);if(v)draw_number(r,v,c.x+c.w/2,c.y+c.h/2,7);}SDL_RenderPresent(r);SDL_Delay(8);
  }
  r36_pad_close(&pad);SDL_DestroyRenderer(r);SDL_DestroyWindow(w);SDL_Quit();return 0;
