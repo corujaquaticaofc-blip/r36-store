@@ -24,7 +24,7 @@ The adapter does **not** execute upstream PortMaster shell launchers, source Por
 
 ## Adapter-ready candidates
 
-Static package checks currently identify 22 candidates for installation through R36 STORE:
+Static package checks currently identify 36 candidates for installation through R36 STORE:
 
 - 2048
 - Wordle SDL
@@ -48,6 +48,20 @@ Static package checks currently identify 22 candidates for installation through 
 - GNU Robbo
 - LBreakoutHD
 - mReader
+- Waternet
+- xkcd Hoverboard
+- iiChantra
+- Ultimate Tapan Kaikki
+- Cave Packer
+- Abuse
+- nKaruga
+- Abu Simbel Profanation Deluxe
+- vitaSnake
+- Pekka Kana 2
+- BlockOut II
+- Demolition Dome
+- Cave Story (Evo)
+- Hex-A-Hop
 
 These are **adapter-ready, not gameplay-verified**. Package download, MD5, safe extraction, architecture, dependency checks, and launcher generation were tested in temporary directories. No game was launched remotely. Each candidate still needs a physical control/gameplay test on the R36S before it can be labelled verified.
 
