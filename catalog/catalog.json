@@ -12,10 +12,10 @@
   "updated_at": "2026-11-07",
   "items": [
     {
-      "id": "snake",
-      "name": "Snake",
-      "category": "Arcade",
-      "description": "Jogo clássico da cobrinha, com controles direcionais.",
+      "id": "2048",
+      "name": "2048",
+      "category": "Puzzle",
+      "description": "Junte os números no tabuleiro até alcançar 2048; agora com números visíveis.",
       "version": "1.0.0",
       "architecture": "aarch64",
       "firmware": [
@@ -23,9 +23,9 @@
         "dArkOS"
       ],
       "download": {
-        "url": "https://github.com/corujaquaticaofc-blip/r36-store/releases/download/snake-v1.0.0/snake-r36s-v1.0.0.zip",
-        "size_bytes": 6993,
-        "sha256": "8edfc928e45fe96ced0d7a43918f3b3f7232afae16219199e8cc243b7e3bae08"
+        "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/2048-r36s-v1.0.0.zip",
+        "size_bytes": 6657,
+        "sha256": "fa3712b7ac38fe4afc4778f916a8db394c6a0fa030bc8434b283e6e89c1fe827"
       },
       "install": {
         "type": "zip",
@@ -33,7 +33,82 @@
       },
       "cover": "",
       "legal": {
-        "notice": "Código original; não inclui ROMs nem conteúdo protegido."
+        "notice": "Código original do projeto R36 STORE; pacote experimental para teste no R36S, sem ROMs ou conteúdo protegido."
+      }
+    },
+    {
+      "id": "snake",
+      "name": "Snake",
+      "category": "Arcade",
+      "description": "Cobrinha clássica com leitura de direcional e joystick do R36S.",
+      "version": "1.1.0",
+      "architecture": "aarch64",
+      "firmware": [
+        "ArkOS",
+        "dArkOS"
+      ],
+      "download": {
+        "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/snake-r36s-v1.1.0.zip",
+        "size_bytes": 5765,
+        "sha256": "bed9570e6e53f0b2ab5cbad111d37bea47b0db2d6d0821a40d420938d796c1d4"
+      },
+      "install": {
+        "type": "zip",
+        "target": "private_ports"
+      },
+      "cover": "",
+      "legal": {
+        "notice": "Código original do projeto R36 STORE; pacote experimental para teste no R36S, sem ROMs ou conteúdo protegido."
+      }
+    },
+    {
+      "id": "pong",
+      "name": "Pong",
+      "category": "Arcade",
+      "description": "Tênis de mesa clássico contra o computador, com controle pelo direcional ou analógico.",
+      "version": "1.0.0",
+      "architecture": "aarch64",
+      "firmware": [
+        "ArkOS",
+        "dArkOS"
+      ],
+      "download": {
+        "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/pong-r36s-v1.0.0.zip",
+        "size_bytes": 5554,
+        "sha256": "1f117dc6e9442d357af976f8816ed8b5639b6fe375611abb9fb75864ff17de1e"
+      },
+      "install": {
+        "type": "zip",
+        "target": "private_ports"
+      },
+      "cover": "",
+      "legal": {
+        "notice": "Código original do projeto R36 STORE; pacote experimental para teste no R36S, sem ROMs ou conteúdo protegido."
+      }
+    },
+    {
+      "id": "breakout",
+      "name": "Breakout",
+      "category": "Arcade",
+      "description": "Destrua os blocos com a plataforma e a bola; controle contínuo no R36S.",
+      "version": "1.0.0",
+      "architecture": "aarch64",
+      "firmware": [
+        "ArkOS",
+        "dArkOS"
+      ],
+      "download": {
+        "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/breakout-r36s-v1.0.0.zip",
+        "size_bytes": 5818,
+        "sha256": "4f49492e83469fec0aede05d454efd6408282bf5a88374a11f10335c24741acf"
+      },
+      "install": {
+        "type": "zip",
+        "target": "private_ports"
+      },
+      "cover": "",
+      "legal": {
+        "notice": "Código original do projeto R36 STORE; pacote experimental para teste no R36S, sem ROMs ou conteúdo protegido."
       }
     }
   ]
