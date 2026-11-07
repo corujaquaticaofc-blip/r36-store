@@ -24,8 +24,8 @@
       ],
       "download": {
         "url": "https://raw.githubusercontent.com/corujaquaticaofc-blip/r36-store/main/packages/2048-r36s-v1.0.0.zip",
-        "size_bytes": 6657,
-        "sha256": "fa3712b7ac38fe4afc4778f916a8db394c6a0fa030bc8434b283e6e89c1fe827"
+        "size_bytes": 6662,
+        "sha256": "5650efd44d8167dbce705f2c86aef953a1a8a04fae9c8c639e265c3cab1c2ada"
       },
       "install": {
         "type": "zip",
