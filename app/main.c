@@ -496,7 +496,10 @@ void draw(void) {
     } else if(category==0) {
         text("ESQUERDA / B  VOLTAR AS CATEGORIAS",18,455,font,white);
     } else if(details && category==1) {
-        text(selected_is_remote() ? "A  INSTALAR" : "A  INICIAR",
+        text(selected>=0 && selected<game_count &&
+             strcmp(games[selected].port,"COMMUNITY")==0 ?
+             "PORT COMUNITARIO" :
+             (selected_is_remote() ? "A  INSTALAR" : "A  INICIAR"),
              18,455,font,white);
         text("B  VOLTAR",190,455,font,white);
     } else if(details && category==4) {
