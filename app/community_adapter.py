@@ -176,7 +176,7 @@ def adapt_libretro(root):
         "#!/bin/bash\n"
         "set -eu\n"
         'ROOT="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
-        f"CORE=\"$ROOT/{core}\"\n"
+        f"CORE=\"$ROOT\"/{quoted}\n"
         "for RA in /usr/local/bin/retroarch /usr/bin/retroarch /opt/retroarch/bin/retroarch; do\n"
         '  if [ -x "$RA" ]; then exec "$RA" -L "$CORE" "$@"; fi\n'
         "done\n"
