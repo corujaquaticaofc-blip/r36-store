@@ -280,6 +280,8 @@ void draw_game_catalog(void) {
             status_color=(SDL_Color){90,210,145,255};
         else if(strstr(games[i].status,"VERIFICAR"))
             status_color=(SDL_Color){255,210,90,255};
+        else if(strstr(games[i].status,"ADAPTADO"))
+            status_color=(SDL_Color){90,210,145,255};
 
         text(games[i].status,435,y+14,font,status_color);
     }
@@ -315,7 +317,11 @@ void draw_game_details(void) {
     }
 
     if(strcmp(g->port,"COMMUNITY")==0) {
-        if(strcmp(g->status,"VERIFICAR")==0) {
+        if(strcmp(g->status,"ADAPTADO")==0) {
+            text("ADAPTADOR PRONTO - NAO TESTADO",225,360,font,
+                 (SDL_Color){90,210,145,255});
+            text("A PARA INSTALAR",225,385,bold,blue);
+        } else if(strcmp(g->status,"VERIFICAR")==0 || strcmp(g->status,"ADAPTADO")==0) {
             text("COMPATIBILIDADE EM ADAPTACAO",225,360,font,
                  (SDL_Color){255,210,90,255});
             text("A PARA INSTALAR",225,385,bold,blue);
@@ -634,7 +640,7 @@ void request_game_launch(void) {
 
     Game *g=&games[selected];
     if(strcmp(g->port,"COMMUNITY")==0) {
-        if(strcmp(g->status,"VERIFICAR")==0) {
+        if(strcmp(g->status,"VERIFICAR")==0 || strcmp(g->status,"ADAPTADO")==0) {
             start_install();
         } else {
             snprintf(launch_error,sizeof(launch_error),
