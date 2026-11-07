@@ -10,6 +10,8 @@ import os
 import re
 import shutil
 import stat
+import struct
+import subprocess
 import sys
 import tempfile
 import urllib.request
@@ -188,6 +190,107 @@ def adapt_libretro(root):
     return {"type": "script", "target": "launch-r36store.sh", "cwd": ".", "args": [], "env": {}}
 
 
+
+def safe_relative(path):
+    value = path.as_posix()
+    if not re.fullmatch(r"[A-Za-z0-9_./ +()-]+", value):
+        raise ValueError("Caminho do pacote contem caracteres nao suportados.")
+    if value.startswith("/") or ".." in PurePosixPath(value).parts:
+        raise ValueError("Caminho relativo invalido.")
+    return value
+
+
+def is_aarch64_elf(path):
+    try:
+        header = path.read_bytes()[:20]
+        return (len(header) >= 20 and header[:4] == b"\x7fELF"
+                and header[4] == 2 and header[5] == 1
+                and struct.unpack_from("<H", header, 18)[0] == 183)
+    except Exception:
+        return False
+
+
+def native_dependencies_ok(binary, root):
+    readelf = shutil.which("readelf")
+    if not readelf:
+        return False
+    result = subprocess.run([readelf, "-d", str(binary)], capture_output=True,
+                            text=True, timeout=8, check=False)
+    if result.returncode != 0:
+        return False
+    needed = re.findall(r"\(NEEDED\).*?\[([^\]]+)\]", result.stdout)
+    system_dirs = [
+        Path("/lib/aarch64-linux-gnu"), Path("/usr/lib/aarch64-linux-gnu"),
+        Path("/usr/local/lib"), Path("/lib"), Path("/usr/lib")
+    ]
+    package_dirs = [p for p in root.rglob("libs") if p.is_dir()]
+    for lib in needed:
+        if not any((directory / lib).exists() for directory in system_dirs + package_dirs):
+            return False
+    program = subprocess.run([readelf, "-l", str(binary)], capture_output=True,
+                             text=True, timeout=8, check=False)
+    interpreter = re.search(r"Requesting program interpreter:\s*([^\]]+)", program.stdout)
+    if interpreter and not Path(interpreter.group(1).strip()).exists():
+        return False
+    return True
+
+
+def adapt_native(root):
+    scripts = list(root.glob("*.sh"))
+    profiles = list(root.rglob("*.gptk"))
+    if len(scripts) != 1 or len(profiles) != 1:
+        return None
+    script = scripts[0].read_text(encoding="utf-8", errors="replace")
+    candidates = []
+    for line in script.splitlines():
+        stripped = line.strip()
+        match = re.search(r"(?:^|\s)(?:exec\s+)?(?:\$TASKSET\s+)?\./([A-Za-z0-9_.+-]+)(?=\s|$)", stripped)
+        if not match:
+            continue
+        tail = stripped[match.end():].strip()
+        if tail and not re.match(r"^(?:2>&1|>|&|\|)", tail):
+            continue
+        for candidate in root.rglob(match.group(1)):
+            if candidate.is_file() and is_aarch64_elf(candidate):
+                candidates.append(candidate)
+    unique = {str(p.resolve()): p for p in candidates}
+    if len(unique) != 1:
+        return None
+    binary = next(iter(unique.values()))
+    if not native_dependencies_ok(binary, root):
+        return None
+    binary.chmod(binary.stat().st_mode | 0o111)
+
+    binary_rel = safe_relative(binary.relative_to(root))
+    game_dir_rel = safe_relative(binary.parent.relative_to(root))
+    profile_rel = safe_relative(profiles[0].relative_to(root))
+    lib_dirs = sorted({p.relative_to(root).as_posix() for p in root.rglob("libs") if p.is_dir()})
+    lines = [
+        "#!/bin/bash",
+        "set -e",
+        'ROOT="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"',
+        f'GAME_DIR="$ROOT/{game_dir_rel}"',
+        'cd "$GAME_DIR"',
+    ]
+    if lib_dirs:
+        joined = ":".join(f"$ROOT/{x}" for x in lib_dirs)
+        lines.append('export LD_LIBRARY_PATH="' + joined + ':$LD_LIBRARY_PATH"')
+    lines.extend([
+        'KEY_PID=""',
+        f'python3 /roms/r36store/app/keymapper.py "$ROOT/{profile_rel}" >/dev/null 2>&1 &',
+        'KEY_PID=$!',
+        'cleanup() { if [ -n "$KEY_PID" ]; then kill "$KEY_PID" 2>/dev/null || true; wait "$KEY_PID" 2>/dev/null || true; fi; }',
+        'trap cleanup EXIT INT TERM',
+        'sleep 0.15',
+        f'"$ROOT/{binary_rel}" "$@"',
+        'exit $?'
+    ])
+    wrapper = root / "launch-r36store.sh"
+    wrapper.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    wrapper.chmod(0o755)
+    return {"type": "script", "target": "launch-r36store.sh", "cwd": ".", "args": [], "env": {}}
+
+
 def register(item, destination, launcher):
     if REGISTRY.exists():
         records = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -232,6 +335,10 @@ def install(item):
             safe_extract(package, extracted)
             check_cancel()
             launcher = adapt_libretro(extracted)
+            profile = "libretro" if launcher else None
+            if launcher is None:
+                launcher = adapt_native(extracted)
+                profile = "native-sdl-keymap" if launcher else None
             if launcher is None:
                 raise ValueError("Formato ainda nao suportado. Nenhum arquivo foi instalado.")
             manifest = {
@@ -251,6 +358,7 @@ def install(item):
                 raise
     progress("complete", 1, 1, "Instalacao comunitaria concluida")
     print("INSTALACAO COMUNITARIA CONCLUIDA!")
+    print("Perfil:", profile)
     print("Destino:", destination)
 
 
