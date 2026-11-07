@@ -1024,6 +1024,8 @@ int main(void) {
                             if(!in_catalog && !details) {
                                 in_catalog=true;
                                 selected=0;
+                                if(category==4)
+                                    refresh_installed_library();
                             } else if(in_catalog && !details && category!=0) {
                                 details=true;
                             } else if(details && category==1) {
@@ -1113,6 +1115,8 @@ int main(void) {
                             if(!in_catalog && !details) {
                                 in_catalog=true;
                                 selected=0;
+                                if(category==4)
+                                    refresh_installed_library();
                             } else if(in_catalog && !details && category!=0) {
                                 details=true;
                             } else if(details && category==1) {
