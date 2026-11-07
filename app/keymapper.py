@@ -218,7 +218,7 @@ def main():
     signal.signal(signal.SIGTERM, stop_signal)
     signal.signal(signal.SIGINT, stop_signal)
     try:
-        dev.grab()
+        # Nao captura o dispositivo: preserva atalhos do firmware e SDL joystick.
         while RUNNING:
             ready, _, _ = select.select([dev.fd], [], [], 0.08)
             if ready:
@@ -242,10 +242,6 @@ def main():
                 send(code, 0)
             except Exception:
                 pass
-        try:
-            dev.ungrab()
-        except Exception:
-            pass
         dev.close()
         ui.close()
     return 0
